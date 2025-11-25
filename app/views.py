@@ -1,142 +1,246 @@
-import calendar
-
 from flask_appbuilder import ModelView
-from flask_appbuilder.charts.views import GroupByChartView
-from flask_appbuilder.models.group import aggregate_count
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 
 from . import appbuilder, db
-from .models import Contact, ContactGroup, Gender, vyrobek, Sklad
-
-def fill_gender():
-    try:
-        db.session.add(Gender(name="Male"))
-        db.session.add(Gender(name="Female"))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-
-class VyrobekModelView(ModelView):
-    datamodel = SQLAInterface(vyrobek)
-    list_columns = ["nazev", "serial_number"]
-
-class SkladModelView(ModelView):
-    datamodel = SQLAInterface(Sklad)
-    list_columns = ["nazev", "datum", "ks", "stav"]
-
-appbuilder.add_view(
-    VyrobekModelView, "List Vyrobky", icon="fa-folder-open-o", category="Vyrobky"
+from .models import (
+    BusinessPermission,
+    Customer,
+    Order,
+    OrderItem,
+    Product,
+    StockItem,
+    Supplier,
+    Warehouse,
 )
 
-appbuilder.add_view(
-    SkladModelView, "List Sklady", icon="fa-folder-open-o", category="Sklady"
-)    
 
-class ContactModelView(ModelView):
-    datamodel = SQLAInterface(Contact)
-
-    list_columns = ["name", "personal_celphone", "birthday", "contact_group.name"]
-
-    base_order = ("name", "asc")
-    show_fieldsets = [
-        ("Summary", {"fields": ["name", "gender", "contact_group"]}),
-        (
-            "Personal Info",
-            {
-                "fields": [
-                    "address",
-                    "birthday",
-                    "personal_phone",
-                    "personal_celphone",
-                ],
-                "expanded": False,
-            },
-        ),
+class SupplierModelView(ModelView):
+    datamodel = SQLAInterface(Supplier)
+    list_columns = ["name", "ico", "dic", "city", "country"]
+    add_columns = [
+        "name",
+        "ico",
+        "dic",
+        "email",
+        "phone",
+        "address",
+        "city",
+        "zip_code",
+        "country",
     ]
+    edit_columns = add_columns
 
-    add_fieldsets = [
-        ("Summary", {"fields": ["name", "gender", "contact_group"]}),
-        (
-            "Personal Info",
-            {
-                "fields": [
-                    "address",
-                    "birthday",
-                    "personal_phone",
-                    "personal_celphone",
-                ],
-                "expanded": False,
-            },
-        ),
+    label_columns = {
+        "name": "Název",
+        "ico": "IČO",
+        "dic": "DIČ",
+        "email": "E-mail",
+        "phone": "Telefon",
+        "address": "Adresa",
+        "city": "Město",
+        "zip_code": "PSČ",
+        "country": "Stát",
+    }
+
+
+class ProductModelView(ModelView):
+    datamodel = SQLAInterface(Product)
+    list_columns = ["sku", "name", "unit_price", "currency", "vat_rate", "is_active"]
+    add_columns = [
+        "sku",
+        "name",
+        "description",
+        "unit_price",
+        "currency",
+        "vat_rate",
+        "barcode",
+        "supplier",
+        "is_active",
     ]
+    edit_columns = add_columns
 
-    edit_fieldsets = [
-        ("Summary", {"fields": ["name", "gender", "contact_group"]}),
-        (
-            "Personal Info",
-            {
-                "fields": [
-                    "address",
-                    "birthday",
-                    "personal_phone",
-                    "personal_celphone",
-                ],
-                "expanded": False,
-            },
-        ),
+    label_columns = {
+        "sku": "Kód",
+        "name": "Název",
+        "description": "Popis",
+        "unit_price": "Cena za jednotku",
+        "currency": "Měna",
+        "vat_rate": "DPH %",
+        "barcode": "Čárový kód",
+        "supplier": "Dodavatel",
+        "is_active": "Aktivní",
+    }
+
+
+class CustomerModelView(ModelView):
+    datamodel = SQLAInterface(Customer)
+    list_columns = ["name", "ico", "dic", "email", "phone", "city", "is_active"]
+    add_columns = [
+        "name",
+        "ico",
+        "dic",
+        "email",
+        "phone",
+        "billing_address",
+        "shipping_address",
+        "city",
+        "zip_code",
+        "country",
+        "is_active",
     ]
+    edit_columns = add_columns
+
+    label_columns = {
+        "name": "Název",
+        "ico": "IČO",
+        "dic": "DIČ",
+        "email": "E-mail",
+        "phone": "Telefon",
+        "billing_address": "Fakturační adresa",
+        "shipping_address": "Doručovací adresa",
+        "city": "Město",
+        "zip_code": "PSČ",
+        "country": "Stát",
+        "is_active": "Aktivní",
+    }
 
 
-class GroupModelView(ModelView):
-    datamodel = SQLAInterface(ContactGroup)
-    related_views = [ContactModelView]
+class WarehouseModelView(ModelView):
+    datamodel = SQLAInterface(Warehouse)
+    list_columns = ["name", "code", "city", "country", "is_active"]
+    add_columns = ["name", "code", "address", "city", "zip_code", "country", "is_active"]
+    edit_columns = add_columns
+
+    label_columns = {
+        "name": "Název skladu",
+        "code": "Kód",
+        "address": "Adresa",
+        "city": "Město",
+        "zip_code": "PSČ",
+        "country": "Stát",
+        "is_active": "Aktivní",
+    }
 
 
-def pretty_month_year(value):
-    return calendar.month_name[value.month] + " " + str(value.year)
+class StockItemModelView(ModelView):
+    datamodel = SQLAInterface(StockItem)
+    list_columns = ["warehouse", "product", "quantity", "min_quantity", "updated_at"]
+    add_columns = ["warehouse", "product", "quantity", "min_quantity"]
+    edit_columns = add_columns
+
+    label_columns = {
+        "warehouse": "Sklad",
+        "product": "Produkt",
+        "quantity": "Množství",
+        "min_quantity": "Minimální množství",
+        "updated_at": "Aktualizováno",
+    }
 
 
-def pretty_year(value):
-    return str(value.year)
+class OrderItemInlineView(ModelView):
+    datamodel = SQLAInterface(OrderItem)
+    list_columns = ["product", "quantity", "unit_price", "vat_rate", "total_line"]
+    add_columns = ["product", "quantity", "unit_price", "vat_rate", "total_line"]
+    edit_columns = add_columns
+
+    label_columns = {
+        "product": "Produkt",
+        "quantity": "Množství",
+        "unit_price": "Cena za jednotku",
+        "vat_rate": "DPH %",
+        "total_line": "Řádkem celkem",
+    }
 
 
-class ContactTimeChartView(GroupByChartView):
-    datamodel = SQLAInterface(Contact)
+class OrderModelView(ModelView):
+    datamodel = SQLAInterface(Order)
+    related_views = [OrderItemInlineView]
 
-    chart_title = "Grouped Birth contacts"
-    chart_type = "AreaChart"
-    label_columns = ContactModelView.label_columns
-    definitions = [
-        {
-            "group": "month_year",
-            "formatter": pretty_month_year,
-            "series": [(aggregate_count, "group")],
-        },
-        {
-            "group": "year",
-            "formatter": pretty_year,
-            "series": [(aggregate_count, "group")],
-        },
+    list_columns = ["order_number", "customer", "created_at", "status", "total_amount", "currency"]
+    add_columns = [
+        "order_number",
+        "customer",
+        "created_at",
+        "due_date",
+        "status",
+        "total_amount",
+        "currency",
+        "note",
     ]
+    edit_columns = add_columns
+
+    label_columns = {
+        "order_number": "Číslo objednávky",
+        "customer": "Zákazník",
+        "created_at": "Vytvořeno",
+        "due_date": "Splatnost",
+        "status": "Stav",
+        "total_amount": "Celková částka",
+        "currency": "Měna",
+        "note": "Poznámka",
+    }
+
+
+class BusinessPermissionModelView(ModelView):
+    datamodel = SQLAInterface(BusinessPermission)
+    list_columns = ["code", "description"]
+    add_columns = ["code", "description"]
+    edit_columns = add_columns
+
+    label_columns = {
+        "code": "Kód oprávnění",
+        "description": "Popis",
+    }
 
 
 db.create_all()
-fill_gender()
+
 appbuilder.add_view(
-    GroupModelView,
-    "List Groups",
-    icon="fa-folder-open-o",
-    category="Contacts",
-    category_icon="fa-envelope",
+    ProductModelView,
+    "Produkty",
+    icon="fa-cube",
+    category="Katalog",
 )
+
 appbuilder.add_view(
-    ContactModelView, "List Contacts", icon="fa-envelope", category="Contacts"
+    SupplierModelView,
+    "Dodavatelé",
+    icon="fa-truck",
+    category="Katalog",
 )
-appbuilder.add_separator("Contacts")
+
 appbuilder.add_view(
-    ContactTimeChartView,
-    "Contacts Birth Chart",
-    icon="fa-dashboard",
-    category="Contacts",
+    CustomerModelView,
+    "Zákazníci",
+    icon="fa-users",
+    category="Obchod",
 )
+
+appbuilder.add_view(
+    WarehouseModelView,
+    "Sklady",
+    icon="fa-archive",
+    category="Logistika",
+)
+
+appbuilder.add_view(
+    StockItemModelView,
+    "Zásoby",
+    icon="fa-cubes",
+    category="Logistika",
+)
+
+appbuilder.add_view(
+    OrderModelView,
+    "Objednávky",
+    icon="fa-file-text-o",
+    category="Obchod",
+)
+
+appbuilder.add_view(
+    BusinessPermissionModelView,
+    "Oprávnění (obchod)",
+    icon="fa-lock",
+    category="Nastavení",
+)
+
