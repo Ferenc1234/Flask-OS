@@ -1,6 +1,6 @@
 import logging
 import random
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from app import db
 from app.models import (
@@ -65,8 +65,8 @@ def create_products(suppliers):
     products = [
         Product(
             sku="NB-001",
-            name="Notebook 15"",
-            description="Kancelářský notebook 15"" s SSD diskem.",
+            name="Notebook 15",
+            description="Kancelářský notebook 15\" s SSD diskem.",
             unit_price=18990,
             vat_rate=21.0,
             barcode="1234567890123",
@@ -74,8 +74,8 @@ def create_products(suppliers):
         ),
         Product(
             sku="MON-001",
-            name="Monitor 24"",
-            description="LED monitor 24"" vhodný pro kancelář.",
+            name='Monitor 24"',
+            description='LED monitor 24" vhodný pro kancelář.',
             unit_price=4990,
             vat_rate=21.0,
             barcode="2345678901234",
@@ -169,7 +169,7 @@ def create_stock(warehouses, products):
                     product=product,
                     quantity=quantity,
                     min_quantity=min_quantity,
-                    updated_at=datetime.utcnow(),
+                    updated_at=datetime.now(timezone.utc),
                 )
             )
     db.session.add_all(stock_items)
@@ -183,9 +183,9 @@ def create_orders(customers, products):
 
     for i in range(3):
         customer = random.choice(customers)
-        created_at = datetime.utcnow() - timedelta(days=random.randint(0, 30))
+        created_at = datetime.now(timezone.utc) - timedelta(days=random.randint(0, 30))
         due_date = date.today() + timedelta(days=14)
-        order_number = f"ORD-{datetime.utcnow():%Y%m%d}-{i+1:03d}"
+        order_number = f"ORD-{datetime.now(timezone.utc):%Y%m%d}-{i+1:03d}"
 
         order = Order(
             order_number=order_number,
