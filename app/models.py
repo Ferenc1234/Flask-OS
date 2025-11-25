@@ -92,6 +92,7 @@ class Warehouse(Model):
         return self.name
 
 
+
 class StockItem(Model):
     __tablename__ = "stock_item"
     __table_args__ = (
